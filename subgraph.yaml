@@ -1,0 +1,94 @@
+specVersion: 0.0.5
+description: Indexes MEV Commit Validators
+repository: https://github.com/primev/mev-commit-subgraph
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: VanillaRegistry
+    network: holesky
+    source:
+      address: "0x87d5f694fad0b6c8aabca96277de09451e277bcf"
+      abi: VanillaRegistry
+      startBlock: 2146241
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - MevCommitValidators
+        - Staker
+      abis:
+        - name: VanillaRegistry
+          file: ./abis/VanillaRegistry.json
+      eventHandlers:
+        - event: Staked(indexed address,indexed address,bytes,uint256)
+          handler: handleStaked
+        - event: Unstaked(indexed address,indexed address,bytes,uint256)
+          handler: handleUnstaked
+        - event: StakeAdded(indexed address,indexed address,bytes,uint256,uint256)
+          handler: handleStakeAdded
+        - event: StakeWithdrawn(indexed address,bytes,uint256)
+          handler: handleStakeWithdrawn
+      file: ./src/mappings/vanilla-registry.mapping.ts
+  - kind: ethereum/contract
+    name: MevCommitAVSV3
+    network: holesky
+    source:
+      address: "0xededb8ed37a43fd399108a44646b85b780d85dd4"
+      abi: MevCommitAVSV3
+      startBlock: 2055152
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - MevCommitValidators
+        - Restaker
+        - Operator
+      abis:
+        - name: MevCommitAVSV3
+          file: ./abis/MevCommitAVSV3.json
+        - name: EigenPodManager
+          file: ./abis/EigenPodManager.json
+      eventHandlers:
+        - event: ValidatorRegistered(bytes,indexed address)
+          handler: handleValidatorRegistered
+        - event: ValidatorDeregistrationRequested(bytes,indexed address)
+          handler: handleValidatorDeregistrationRequested
+        - event: ValidatorDeregistered(bytes,indexed address)
+          handler: handleValidatorDeregistered
+        - event: OperatorRegistered(indexed address)
+          handler: handleOperatorRegistered
+        - event: OperatorDeregistered(indexed address)
+          handler: handleOperatorDeregistered
+        - event: OperatorDeregistrationRequested(indexed address)
+          handler: handleOperatorDeregistrationRequested
+      file: ./src/mappings/mev-commit-avs-v3.mapping.ts
+  - kind: ethereum/contract
+    name: DelegationManager
+    network: holesky
+    source:
+      address: "0xA44151489861Fe9e3055d95adC98FbD462B948e7"
+      abi: DelegationManager
+      startBlock: 19492759
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Operator
+        - EigenPod
+      abis:
+        - name: DelegationManager
+          file: ./abis/DelegationManager.json
+        - name: EigenPodManager
+          file: ./abis/EigenPodManager.json
+      eventHandlers:
+        - event: StakerDelegated(indexed address,indexed address)
+          handler: handleStakerDelegated
+        - event: StakerUndelegated(indexed address,indexed address)
+          handler: handleStakerUndelegated
+        - event: StakerForceUndelegated(indexed address,indexed address)
+          handler: handleStakerUndelegated
+      file: ./src/mappings/delegation-manager.mapping.ts
