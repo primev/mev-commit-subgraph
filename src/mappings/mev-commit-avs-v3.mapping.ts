@@ -1,13 +1,17 @@
 import { BigInt } from '@graphprotocol/graph-ts';
-import { MevCommitValidators, Restaker } from '../generated/schema';
+import { Operator, Restaker } from '../../generated/schema';
 import {
   ValidatorRegistered,
   ValidatorDeregistered,
   ValidatorDeregistrationRequested,
-} from '../generated/MevCommitAVSV3/MevCommitAVSV3';
-
-// Constants
-const MEV_COMMIT_VALIDATORS_ID = 'mevCommitValidators';
+  OperatorRegistered,
+  OperatorDeregistered,
+  OperatorDeregistrationRequested,
+} from '../../generated/MevCommitAVSV3/MevCommitAVSV3';
+import {
+  createOrLoadEigenPod,
+  loadOrCreateMevCommitValidators,
+} from '../utils';
 
 // This is the default amount of ETH that a validator is restaked with
 // TODO: This should be looked up from the contract in the future
@@ -15,32 +19,25 @@ const DEFAULT_RESTAKED_AMOUNT = BigInt.fromI32(32).times(
   BigInt.fromI32(10).pow(18)
 ); // 32 ETH
 
-// Helper function to load or create MevCommitValidators entity
-function loadOrCreateMevCommitValidators(): MevCommitValidators {
-  let mevCommitValidators = MevCommitValidators.load(MEV_COMMIT_VALIDATORS_ID);
-  if (mevCommitValidators == null) {
-    mevCommitValidators = new MevCommitValidators(MEV_COMMIT_VALIDATORS_ID);
-    mevCommitValidators.totalOptedIn = BigInt.fromI32(0);
-    mevCommitValidators.totalStaked = BigInt.fromI32(0);
-    mevCommitValidators.totalRestaked = BigInt.fromI32(0);
-  }
-  return mevCommitValidators;
-}
-
 // Helper function to load or create Restaker entity
 function loadOrCreateRestaker(
   validatorPubKey: string,
   event: ValidatorRegistered
 ): Restaker {
   let restaker = Restaker.load(validatorPubKey);
+
   if (restaker == null) {
+    // Create a new eigenpod at the time of restaking
+    const eigenpod = createOrLoadEigenPod(event.params.podOwner);
+    eigenpod.save();
+
     restaker = new Restaker(validatorPubKey);
     restaker.validatorBLSKey = validatorPubKey;
     restaker.created = event.block.timestamp;
     restaker.status = 'Registered';
     restaker.restakedAmount = DEFAULT_RESTAKED_AMOUNT;
     restaker.restakedAt = event.block.number;
-    restaker.podOwner = event.params.podOwner.toHex();
+    restaker.eigenPod = eigenpod.id;
   }
   return restaker;
 }
@@ -105,4 +102,32 @@ export function handleValidatorDeregistrationRequested(
     DEFAULT_RESTAKED_AMOUNT
   );
   mevCommitValidators.save();
+}
+
+export function handleOperatorRegistered(event: OperatorRegistered): void {
+  let operator = Operator.load(event.params.operator.toHex());
+  if (operator == null) {
+    operator = new Operator(event.params.operator.toHex());
+    operator.operatorAddress = event.params.operator;
+    operator.created = event.block.timestamp;
+    operator.status = 'Registered';
+  }
+}
+
+export function handleOperatorDeregistered(event: OperatorDeregistered): void {
+  let operator = Operator.load(event.params.operator.toHex());
+  if (operator != null) {
+    operator.status = 'Deregistered';
+    operator.save();
+  }
+}
+
+export function handleOperatorDeregistrationRequested(
+  event: OperatorDeregistrationRequested
+): void {
+  let operator = Operator.load(event.params.operator.toHex());
+  if (operator != null) {
+    operator.status = 'DeregistrationRequested';
+    operator.save();
+  }
 }

@@ -27,5 +27,5 @@ jobs:
         uses: goldsky-io/goldsky-deploy@latest
         with:
           api_key: ${{ secrets.GOLDSKY_API_KEY }}
-          subgraph_name: 'ethereum-blocks'
+          subgraph_name: 'mev-commit-validators'
           path: '.'

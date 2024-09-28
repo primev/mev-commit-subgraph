@@ -20,7 +20,7 @@ type Validator @entity {
   id: ID!
   # The validator's BLS key
   validatorBLSKey: String!
-  # The block number at which the validator was created
+  # The block timestamp at which the validator was created
   created: BigInt!
   # The MEV Commit validators entity that the validator belongs to
   mevCommitValidator: MevCommitValidators! @relation
@@ -44,50 +44,41 @@ enum StakerStatus {
   # Paused
 }
 
-enum RestakerStatus {
-  Registered
-  DeregistrationRequested
-  Deregistered
-}
-
 type Restaker @entity {
   id: ID!
   validatorBLSKey: String!
   created: BigInt!
   status: RestakerStatus!
   restakedAmount: BigInt!
-  # the block number at which the restaker was created
   restakedAt: BigInt!
-  podOwner: String!
+  eigenPod: EigenPod @relation(fields: ["id"], references: ["id"]) # Updated relation
 }
 
-# type EigenPod @entity {
-#   # the pod owner's address + pod contract address
-#   id: ID!
-#   podOwner: String!
-#   podContractAddress: String!
-# }
+enum RestakerStatus {
+  Registered
+  DeregistrationRequested
+  Deregistered
+}
 
-# type Account @entity {
-#   id: ID!
-#   tokens: [Token!]! @derivedFrom(field: "owner")
-#   tokensOwned: BigInt!
-# }
+type Operator @entity {
+  id: ID!
+  operatorAddress: Bytes!
+  created: BigInt!
+  status: OperatorStatus!
+  delegatedPods: [EigenPod!] @derivedFrom(field: "operator")
+}
 
-# type Event @entity {
-#   id: ID!
-#   tokens: [Token!]! @derivedFrom(field: "event")
-#   tokenCount: BigInt!
-#   created: BigInt!
-#   transferCount: BigInt!
-#   tokenMints: BigInt!
-# }
+enum OperatorStatus {
+  Registered
+  DeregistrationRequested
+  Deregistered
+}
 
-# type Transfer @entity {
-#   id: ID!
-#   token: Token!
-#   from: Account!
-#   to: Account!
-#   transaction: Bytes!
-#   timestamp: BigInt!
-# }
+type EigenPod @entity {
+  # The pod contract's address
+  id: ID!
+  podOwner: Bytes!
+  podContractAddress: Bytes!
+  operator: Operator @relation(nullable: true)
+  restakers: [Restaker!] @derivedFrom(field: "eigenPod")
+}
