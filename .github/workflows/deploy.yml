@@ -12,17 +12,30 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Install node
+
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'pnpm'
+
+      # Install pnpm globally
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      # Install dependencies using pnpm
       - name: Install dependencies
         run: pnpm install
+
+      # Run codegen using pnpm
       - name: codegen
         run: pnpm run codegen
+
+      # Build the project using pnpm
       - name: build
         run: pnpm run build
+
+      # Deploy subgraph using Goldsky action
       - name: Deploy Subgraph
         uses: goldsky-io/goldsky-deploy@latest
         with:
