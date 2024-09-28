@@ -1,0 +1,6 @@
+{
+  "network": "holesky",
+  "address": "0x87d5f694fad0b6c8aabca96277de09451e277bcf",
+  "startBlock": 2146241,
+  "file": "VanillaRegistry"
+}

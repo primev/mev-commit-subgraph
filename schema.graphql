@@ -1,0 +1,80 @@
+type MevCommitValidators @entity {
+  id: ID!
+  totalOptedIn: BigInt!
+  totalStaked: BigInt!
+  totalRestaked: BigInt!
+  validators: [Validator!]! @derivedFrom(field: "mevCommitValidator")
+}
+
+type Validator @entity {
+  id: ID!
+  validatorBLSKey: String!
+  created: BigInt!
+  mevCommitValidator: MevCommitValidators! @relation
+}
+
+type Staker @entity {
+  # the validator's BLS key
+  id: ID!
+  validatorBLSKey: String!
+  created: BigInt!
+  status: StakerStatus!
+  stakedAmount: BigInt!
+  # the block number at which the staker was created
+  stakedAt: BigInt!
+}
+
+enum StakerStatus {
+  Staked
+  Unstaked
+  Withdrawn
+  # Paused
+}
+
+enum RestakerStatus {
+  Registered
+  DeregistrationRequested
+  Deregistered
+}
+
+type Restaker @entity {
+  id: ID!
+  validatorBLSKey: String!
+  created: BigInt!
+  status: RestakerStatus!
+  restakedAmount: BigInt!
+  # the block number at which the restaker was created
+  restakedAt: BigInt!
+  podOwner: String!
+}
+
+# type EigenPod @entity {
+#   # the pod owner's address + pod contract address
+#   id: ID!
+#   podOwner: String!
+#   podContractAddress: String!
+# }
+
+# type Account @entity {
+#   id: ID!
+#   tokens: [Token!]! @derivedFrom(field: "owner")
+#   tokensOwned: BigInt!
+# }
+
+# type Event @entity {
+#   id: ID!
+#   tokens: [Token!]! @derivedFrom(field: "event")
+#   tokenCount: BigInt!
+#   created: BigInt!
+#   transferCount: BigInt!
+#   tokenMints: BigInt!
+# }
+
+# type Transfer @entity {
+#   id: ID!
+#   token: Token!
+#   from: Account!
+#   to: Account!
+#   transaction: Bytes!
+#   timestamp: BigInt!
+# }
