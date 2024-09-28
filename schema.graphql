@@ -10,7 +10,7 @@ type MevCommitValidators @entity {
   totalRestaked: BigInt!
 
   # The total amount of ETH that has been staked & restaked on the MEV Commit network
-  totalSecurity: BigInt!
+  # totalSecurity: BigInt!
   # The validators that have opted in to MEV Commit
   validators: [Validator!]! @derivedFrom(field: "mevCommitValidator")
 }

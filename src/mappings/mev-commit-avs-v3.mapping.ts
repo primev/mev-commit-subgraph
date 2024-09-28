@@ -57,6 +57,7 @@ export function handleValidatorRegistered(event: ValidatorRegistered): void {
   mevCommitValidators.totalRestaked = mevCommitValidators.totalRestaked.plus(
     DEFAULT_RESTAKED_AMOUNT
   );
+
   mevCommitValidators.totalOptedIn = mevCommitValidators.totalOptedIn.plus(
     BigInt.fromI32(1)
   );
