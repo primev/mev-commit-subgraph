@@ -1,15 +1,28 @@
+# High level entity that tracks metrics for the MEV Commit network
 type MevCommitValidators @entity {
   id: ID!
+  # Total number of validators that have opted in to MEV Commit
+  # Includes both staked and restaked validators
   totalOptedIn: BigInt!
+  # The total amount of ETH that has been staked
   totalStaked: BigInt!
+  # The total amount of ETH that has been restaked
   totalRestaked: BigInt!
+
+  # The total amount of ETH that has been staked & restaked on the MEV Commit network
+  totalSecurity: BigInt!
+  # The validators that have opted in to MEV Commit
   validators: [Validator!]! @derivedFrom(field: "mevCommitValidator")
 }
 
+# Represents a validator that has opted in to MEV Commit
 type Validator @entity {
   id: ID!
+  # The validator's BLS key
   validatorBLSKey: String!
+  # The block number at which the validator was created
   created: BigInt!
+  # The MEV Commit validators entity that the validator belongs to
   mevCommitValidator: MevCommitValidators! @relation
 }
 

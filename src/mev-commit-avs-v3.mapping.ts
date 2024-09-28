@@ -8,6 +8,9 @@ import {
 
 // Constants
 const MEV_COMMIT_VALIDATORS_ID = 'mevCommitValidators';
+
+// This is the default amount of ETH that a validator is restaked with
+// TODO: This should be looked up from the contract in the future
 const DEFAULT_RESTAKED_AMOUNT = BigInt.fromI32(32).times(
   BigInt.fromI32(10).pow(18)
 ); // 32 ETH
@@ -42,7 +45,12 @@ function loadOrCreateRestaker(
   return restaker;
 }
 
-// Handler for ValidatorRegistered event
+/**
+ * Handler for ValidatorRegistered event
+ * when a validator is registered, we update the total restaked amount and the total opted in count
+ * since the validator is now opted in to the MEV Commit network
+ * @param event
+ */
 export function handleValidatorRegistered(event: ValidatorRegistered): void {
   let validatorPubKey = event.params.validatorPubKey.toHex();
   let restaker = loadOrCreateRestaker(validatorPubKey, event);
@@ -58,7 +66,9 @@ export function handleValidatorRegistered(event: ValidatorRegistered): void {
   mevCommitValidators.save();
 }
 
-// Handler for ValidatorDeregistered event
+/**
+ * Handler for ValidatorDeregistered event
+ */
 export function handleValidatorDeregistered(
   event: ValidatorDeregistered
 ): void {
@@ -69,7 +79,11 @@ export function handleValidatorDeregistered(
   }
 }
 
-// Handler for ValidatorDeregistrationRequested event
+/**
+ * Handler for ValidatorDeregistrationRequested event
+ * when a validator requests to be deregistered, we update the total restaked amount and the total opted in count
+ * since the validator is considered no longer opted in to the MEV Commit network
+ */
 export function handleValidatorDeregistrationRequested(
   event: ValidatorDeregistrationRequested
 ): void {
@@ -80,9 +94,13 @@ export function handleValidatorDeregistrationRequested(
   }
 
   let mevCommitValidators = loadOrCreateMevCommitValidators();
+
+  // subtract 1 from the total opted in count since the validator is no longer opted in to the MEV Commit network
   mevCommitValidators.totalOptedIn = mevCommitValidators.totalOptedIn.minus(
     BigInt.fromI32(1)
   );
+
+  // subtract the restaked amount from the total restaked amount
   mevCommitValidators.totalRestaked = mevCommitValidators.totalRestaked.minus(
     DEFAULT_RESTAKED_AMOUNT
   );
