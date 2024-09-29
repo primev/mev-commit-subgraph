@@ -9,32 +9,48 @@ type MevCommitValidators @entity {
   # The total amount of ETH that has been restaked
   totalRestaked: BigInt!
 
-  # The total amount of ETH that has been staked & restaked on the MEV Commit network
   # totalSecurity: BigInt!
+
   # The validators that have opted in to MEV Commit
   validators: [Validator!]! @derivedFrom(field: "mevCommitValidator")
 }
 
-# Represents a validator that has opted in to MEV Commit
-type Validator @entity {
+# Interface for common validator fields
+interface Validator @entity {
   id: ID!
-  # The validator's BLS key
   validatorBLSKey: String!
-  # The block timestamp at which the validator was created
-  created: BigInt!
-  # The MEV Commit validators entity that the validator belongs to
-  mevCommitValidator: MevCommitValidators! @relation
+  stakeAmount: BigInt!
+  stakedAt: BigInt!
+  mevCommitValidator: MevCommitValidators!
+}
+
+# Represents a validator that has opted in to MEV Commit as a Staker
+type StakerValidator @entity {
+  id: ID!
+  validatorBLSKey: String!
+  stakeAmount: BigInt!
+  stakedAt: BigInt!
+  mevCommitValidator: MevCommitValidators!
+  status: StakerStatus!
+  staker: Staker! @relation
+}
+
+# Represents a validator that has opted in to MEV Commit as a Restaker
+type RestakerValidator @entity {
+  id: ID!
+  validatorBLSKey: String!
+  stakeAmount: BigInt!
+  stakedAt: BigInt!
+  mevCommitValidator: MevCommitValidators!
+  status: RestakerStatus!
+  restaker: Restaker! @relation
 }
 
 type Staker @entity {
   # the validator's BLS key
   id: ID!
-  validatorBLSKey: String!
   created: BigInt!
-  status: StakerStatus!
-  stakedAmount: BigInt!
-  # the block number at which the staker was created
-  stakedAt: BigInt!
+  validators: [StakerValidator!]! @derivedFrom(field: "staker")
 }
 
 enum StakerStatus {
@@ -45,13 +61,10 @@ enum StakerStatus {
 }
 
 type Restaker @entity {
-  id: ID!
-  validatorBLSKey: String!
+  id: ID! # This is the restaker's address
   created: BigInt!
-  status: RestakerStatus!
-  restakedAmount: BigInt!
-  restakedAt: BigInt!
-  eigenPod: EigenPod @relation(fields: ["id"], references: ["id"]) # Updated relation
+  eigenPods: [EigenPod!]! @derivedFrom(field: "restaker")
+  validators: [RestakerValidator!]! @derivedFrom(field: "restaker")
 }
 
 enum RestakerStatus {
@@ -80,5 +93,5 @@ type EigenPod @entity {
   podOwner: Bytes!
   podContractAddress: Bytes!
   operator: Operator @relation(nullable: true)
-  restakers: [Restaker!] @derivedFrom(field: "eigenPod")
+  restaker: Restaker! @relation
 }

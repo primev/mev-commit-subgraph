@@ -18,6 +18,8 @@ dataSources:
       entities:
         - MevCommitValidators
         - Staker
+        - StakerValidator
+        - Validator
       abis:
         - name: VanillaRegistry
           file: ./abis/VanillaRegistry.json
@@ -46,6 +48,8 @@ dataSources:
         - MevCommitValidators
         - Restaker
         - Operator
+        - RestakerValidator
+        - Validator
       abis:
         - name: MevCommitAVSV3
           file: ./abis/MevCommitAVSV3.json

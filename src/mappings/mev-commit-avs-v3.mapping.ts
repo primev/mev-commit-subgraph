@@ -1,5 +1,5 @@
 import { BigInt } from '@graphprotocol/graph-ts';
-import { Operator, Restaker } from '../../generated/schema';
+import { Operator, Restaker, RestakerValidator } from '../../generated/schema';
 import {
   ValidatorRegistered,
   ValidatorDeregistered,
@@ -11,6 +11,7 @@ import {
 import {
   createOrLoadEigenPod,
   loadOrCreateMevCommitValidators,
+  max,
 } from '../utils';
 
 // This is the default amount of ETH that a validator is restaked with
@@ -20,26 +21,22 @@ const DEFAULT_RESTAKED_AMOUNT = BigInt.fromI32(32).times(
 ); // 32 ETH
 
 // Helper function to load or create Restaker entity
-function loadOrCreateRestaker(
-  validatorPubKey: string,
+function loadOrCreateRestakerValidator(
+  restakerAddress: string,
   event: ValidatorRegistered
-): Restaker {
-  let restaker = Restaker.load(validatorPubKey);
+): RestakerValidator {
+  let validatorBLSKey = event.params.validatorPubKey.toHex();
+  let restakerValidator = RestakerValidator.load(validatorBLSKey);
 
-  if (restaker == null) {
-    // Create a new eigenpod at the time of restaking
-    const eigenpod = createOrLoadEigenPod(event.params.podOwner);
-    eigenpod.save();
-
-    restaker = new Restaker(validatorPubKey);
-    restaker.validatorBLSKey = validatorPubKey;
-    restaker.created = event.block.timestamp;
-    restaker.status = 'Registered';
-    restaker.restakedAmount = DEFAULT_RESTAKED_AMOUNT;
-    restaker.restakedAt = event.block.number;
-    restaker.eigenPod = eigenpod.id;
+  if (restakerValidator == null) {
+    restakerValidator = new RestakerValidator(validatorBLSKey);
+    restakerValidator.validatorBLSKey = validatorBLSKey;
+    restakerValidator.status = 'Registered';
+    restakerValidator.stakeAmount = DEFAULT_RESTAKED_AMOUNT;
+    restakerValidator.stakedAt = event.block.timestamp;
+    restakerValidator.restaker = restakerAddress;
   }
-  return restaker;
+  return restakerValidator;
 }
 
 /**
@@ -50,8 +47,19 @@ function loadOrCreateRestaker(
  */
 export function handleValidatorRegistered(event: ValidatorRegistered): void {
   let validatorPubKey = event.params.validatorPubKey.toHex();
-  let restaker = loadOrCreateRestaker(validatorPubKey, event);
-  restaker.save();
+  let restakerAddress = event.transaction.from.toHex();
+
+  let restaker = Restaker.load(restakerAddress);
+  if (restaker == null) {
+    restaker = new Restaker(restakerAddress);
+    restaker.created = event.block.timestamp;
+  }
+
+  const eigenpod = createOrLoadEigenPod(event.params.podOwner, restakerAddress);
+  eigenpod.save();
+
+  let restakerValidator = loadOrCreateRestakerValidator(restakerAddress, event);
+  restakerValidator.save();
 
   let mevCommitValidators = loadOrCreateMevCommitValidators();
   mevCommitValidators.totalRestaked = mevCommitValidators.totalRestaked.plus(
@@ -70,10 +78,12 @@ export function handleValidatorRegistered(event: ValidatorRegistered): void {
 export function handleValidatorDeregistered(
   event: ValidatorDeregistered
 ): void {
-  let restaker = Restaker.load(event.params.validatorPubKey.toHex());
-  if (restaker != null) {
-    restaker.status = 'Deregistered';
-    restaker.save();
+  let restakerValidator = RestakerValidator.load(
+    event.params.validatorPubKey.toHex()
+  );
+  if (restakerValidator != null) {
+    restakerValidator.status = 'Deregistered';
+    restakerValidator.save();
   }
 }
 
@@ -85,22 +95,25 @@ export function handleValidatorDeregistered(
 export function handleValidatorDeregistrationRequested(
   event: ValidatorDeregistrationRequested
 ): void {
-  let restaker = Restaker.load(event.params.validatorPubKey.toHex());
-  if (restaker != null) {
-    restaker.status = 'DeregistrationRequested';
-    restaker.save();
+  let restakerValidator = RestakerValidator.load(
+    event.params.validatorPubKey.toHex()
+  );
+  if (restakerValidator != null) {
+    restakerValidator.status = 'DeregistrationRequested';
+    restakerValidator.save();
   }
 
   let mevCommitValidators = loadOrCreateMevCommitValidators();
 
-  // subtract 1 from the total opted in count since the validator is no longer opted in to the MEV Commit network
-  mevCommitValidators.totalOptedIn = mevCommitValidators.totalOptedIn.minus(
-    BigInt.fromI32(1)
+  // Use max function to ensure totalOptedIn and totalRestaked don't go below 0
+  mevCommitValidators.totalOptedIn = max(
+    mevCommitValidators.totalOptedIn.minus(BigInt.fromI32(1)),
+    BigInt.fromI32(0)
   );
 
-  // subtract the restaked amount from the total restaked amount
-  mevCommitValidators.totalRestaked = mevCommitValidators.totalRestaked.minus(
-    DEFAULT_RESTAKED_AMOUNT
+  mevCommitValidators.totalRestaked = max(
+    mevCommitValidators.totalRestaked.minus(DEFAULT_RESTAKED_AMOUNT),
+    BigInt.fromI32(0)
   );
   mevCommitValidators.save();
 }
