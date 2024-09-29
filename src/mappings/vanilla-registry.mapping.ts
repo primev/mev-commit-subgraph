@@ -20,7 +20,6 @@ export function loadOrCreateStakerValidator(
     stakerValidator.stakeAmount = event.params.amount;
     stakerValidator.stakedAt = event.block.number;
     stakerValidator.status = 'Staked';
-    stakerValidator.save();
   }
   return stakerValidator;
 }
@@ -36,7 +35,7 @@ export function handleStaked(event: Staked): void {
     staker.save();
   }
 
-  let stakerValidator = loadOrCreateStakerValidator(staker.id, event);
+  let stakerValidator = loadOrCreateStakerValidator(stakerAddress, event);
   stakerValidator.save();
 
   // Load or create the MevCommitValidators entity

@@ -46,7 +46,6 @@ function loadOrCreateRestakerValidator(
  * @param event
  */
 export function handleValidatorRegistered(event: ValidatorRegistered): void {
-  let validatorPubKey = event.params.validatorPubKey.toHex();
   let restakerAddress = event.transaction.from.toHex();
 
   let restaker = Restaker.load(restakerAddress);
@@ -126,6 +125,7 @@ export function handleOperatorRegistered(event: OperatorRegistered): void {
     operator.created = event.block.timestamp;
     operator.status = 'Registered';
   }
+  operator.save();
 }
 
 export function handleOperatorDeregistered(event: OperatorDeregistered): void {
