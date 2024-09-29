@@ -12,7 +12,7 @@ type MevCommitValidators @entity {
   # totalSecurity: BigInt!
 
   # The validators that have opted in to MEV Commit
-  validators: [Validator!]! @derivedFrom(field: "mevCommitValidator")
+  # validators: [Validator!]! @derivedFrom(field: "mevCommitValidator")
 }
 
 # Interface for common validator fields
@@ -30,7 +30,7 @@ type StakerValidator @entity {
   validatorBLSKey: String!
   stakeAmount: BigInt!
   stakedAt: BigInt!
-  mevCommitValidator: MevCommitValidators!
+  # mevCommitValidator: MevCommitValidators!
   status: StakerStatus!
   staker: Staker! @relation
 }
@@ -41,7 +41,7 @@ type RestakerValidator @entity {
   validatorBLSKey: String!
   stakeAmount: BigInt!
   stakedAt: BigInt!
-  mevCommitValidator: MevCommitValidators!
+  # mevCommitValidator: MevCommitValidators!
   status: RestakerStatus!
   restaker: Restaker! @relation
 }
