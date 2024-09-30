@@ -14,14 +14,10 @@ export function handleStakerDelegated(event: StakerDelegated): void {
   }
   operator.save();
 
-  // If the operator exists, then we can get the pod contract address and create or load the eigenpod
-  // The operator will exist if it has been registered with the mev-commit-avs-v3 contract
-  if (operator) {
-    // Get the eigen pod address given the staker aka the pod owner
-    const eigenpod = createOrLoadEigenPod(event.params.staker);
+  // Get the eigen pod address given the staker aka the pod owner
+  const eigenpod = createOrLoadEigenPod(event.params.staker);
 
-    // Set the operator for the eigenpod
-    eigenpod.operator = operatorAddress;
-    eigenpod.save();
-  }
+  // Set the operator for the eigenpod
+  eigenpod.operator = operator.id;
+  eigenpod.save();
 }

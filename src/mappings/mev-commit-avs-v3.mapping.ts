@@ -58,6 +58,7 @@ export function handleValidatorRegistered(event: ValidatorRegistered): void {
   eigenpod.save();
 
   let restakerValidator = loadOrCreateRestakerValidator(event);
+  restakerValidator.status = 'Registered';
   restakerValidator.save();
 
   let mevCommitValidators = loadOrCreateMevCommitValidators();

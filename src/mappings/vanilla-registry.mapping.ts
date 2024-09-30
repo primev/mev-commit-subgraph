@@ -36,6 +36,7 @@ export function handleStaked(event: Staked): void {
   }
 
   let stakerValidator = loadOrCreateStakerValidator(stakerAddress, event);
+  stakerValidator.status = 'Staked';
   stakerValidator.save();
 
   // Load or create the MevCommitValidators entity
