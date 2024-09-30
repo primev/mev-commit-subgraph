@@ -22,7 +22,6 @@ const DEFAULT_RESTAKED_AMOUNT = BigInt.fromI32(32).times(
 
 // Helper function to load or create Restaker entity
 function loadOrCreateRestakerValidator(
-  restakerAddress: string,
   event: ValidatorRegistered
 ): RestakerValidator {
   let validatorBLSKey = event.params.validatorPubKey.toHex();
@@ -34,7 +33,7 @@ function loadOrCreateRestakerValidator(
     restakerValidator.status = 'Registered';
     restakerValidator.stakeAmount = DEFAULT_RESTAKED_AMOUNT;
     restakerValidator.stakedAt = event.block.timestamp;
-    restakerValidator.restaker = restakerAddress;
+    restakerValidator.restaker = event.params.podOwner.toHex();
   }
   return restakerValidator;
 }
@@ -46,18 +45,19 @@ function loadOrCreateRestakerValidator(
  * @param event
  */
 export function handleValidatorRegistered(event: ValidatorRegistered): void {
-  let restakerAddress = event.transaction.from.toHex();
+  let restakerAddress = event.params.podOwner.toHex();
 
   let restaker = Restaker.load(restakerAddress);
   if (restaker == null) {
     restaker = new Restaker(restakerAddress);
     restaker.created = event.block.timestamp;
+    restaker.save();
   }
 
-  const eigenpod = createOrLoadEigenPod(event.params.podOwner, restakerAddress);
+  const eigenpod = createOrLoadEigenPod(event.params.podOwner);
   eigenpod.save();
 
-  let restakerValidator = loadOrCreateRestakerValidator(restakerAddress, event);
+  let restakerValidator = loadOrCreateRestakerValidator(event);
   restakerValidator.save();
 
   let mevCommitValidators = loadOrCreateMevCommitValidators();

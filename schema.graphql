@@ -82,8 +82,13 @@ type Operator @entity {
 }
 
 enum OperatorStatus {
+  # Unregistered operators are not registered with the mev-commit-avs-v3 contract
+  Unregistered
+  # Registered operators are registered with the mev-commit-avs-v3 contract
   Registered
+  # DeregistrationRequested operators have requested to be deregistered from the mev-commit-avs-v3 contract
   DeregistrationRequested
+  # Deregistered operators are deregistered from the mev-commit-avs-v3 contract
   Deregistered
 }
 

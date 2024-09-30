@@ -16,10 +16,7 @@ export function loadOrCreateMevCommitValidators(): MevCommitValidators {
   return mevCommitValidators;
 }
 
-export function createOrLoadEigenPod(
-  podOwner: Address,
-  restakerAddress: string | null = null
-): EigenPod {
+export function createOrLoadEigenPod(podOwner: Address): EigenPod {
   // Get the pod contract address given the pod owner address
   const eigenpodManager = EigenPodManager.bind(EIGENPOD_MANAGER_ADDRESS);
   const podAddress = eigenpodManager.getPod(podOwner);
@@ -30,9 +27,7 @@ export function createOrLoadEigenPod(
     eigenpod = new EigenPod(podAddress.toHex());
     eigenpod.podOwner = podOwner;
     eigenpod.podContractAddress = podAddress;
-    if (restakerAddress) {
-      eigenpod.restaker = restakerAddress;
-    }
+    eigenpod.restaker = podOwner.toHex();
   }
 
   return eigenpod;
