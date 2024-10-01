@@ -97,6 +97,6 @@ type EigenPod @entity {
   id: ID!
   podOwner: Bytes!
   podContractAddress: Bytes!
-  operator: Operator @relation
+  operator: Operator @relation(nullable: true)
   restaker: Restaker! @relation
 }
