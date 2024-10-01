@@ -10,7 +10,7 @@ dataSources:
     source:
       address: "0x87d5f694fad0b6c8aabca96277de09451e277bcf"
       abi: VanillaRegistry
-      startBlock: 19492759
+      startBlock: 2146241
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -39,7 +39,7 @@ dataSources:
     source:
       address: "0xededb8ed37a43fd399108a44646b85b780d85dd4"
       abi: MevCommitAVSV3
-      startBlock: 19492759
+      startBlock: 2055152
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -75,7 +75,7 @@ dataSources:
     source:
       address: "0xA44151489861Fe9e3055d95adC98FbD462B948e7"
       abi: DelegationManager
-      startBlock: 19492759
+      startBlock: 1167044
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
