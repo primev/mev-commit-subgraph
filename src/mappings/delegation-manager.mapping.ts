@@ -25,7 +25,7 @@ export function handleStakerDelegated(event: StakerDelegated): void {
   eigenpod.save();
 }
 
-export function handlerStakerUndelegated(event: StakerUndelegated): void {
+export function handleStakerUndelegated(event: StakerUndelegated): void {
   let operatorAddress = event.params.operator.toHex();
 
   let operator = Operator.load(operatorAddress);
