@@ -124,8 +124,8 @@ export function handleOperatorRegistered(event: OperatorRegistered): void {
     operator = new Operator(event.params.operator.toHex());
     operator.operatorAddress = event.params.operator;
     operator.created = event.block.timestamp;
-    operator.status = 'Registered';
   }
+  operator.status = 'Registered';
   operator.save();
 }
 
