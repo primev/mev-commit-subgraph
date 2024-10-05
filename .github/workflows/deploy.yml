@@ -61,5 +61,5 @@ jobs:
       # Deploy subgraph using Goldsky CLI
       - name: Deploy Subgraph using Goldsky CLI
         id: deploy-subgraph
-        run: goldsky subgraph deploy --token ${{ secrets.GOLDSKY_API_KEY }} ${{ env.SUBGRAPH_NAME }}/$SUBGRAPH_TAG --path .
+        run: goldsky subgraph deploy --token ${{ secrets.GOLDSKY_API_KEY }} mev-commit-validators/$SUBGRAPH_TAG --path .
         shell: bash
