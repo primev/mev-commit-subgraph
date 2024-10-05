@@ -1,5 +1,5 @@
 import { Address, BigInt } from '@graphprotocol/graph-ts';
-import { EigenPod, MevCommitValidators } from '../generated/schema';
+import { EigenPod, MevCommitValidators, Restaker } from '../generated/schema';
 import { EigenPodManager } from '../generated/DelegationManager/EigenPodManager';
 import { EIGENPOD_MANAGER_ADDRESS } from './constants';
 
@@ -16,7 +16,10 @@ export function loadOrCreateMevCommitValidators(): MevCommitValidators {
   return mevCommitValidators;
 }
 
-export function createOrLoadEigenPod(podOwner: Address): EigenPod {
+export function createOrLoadEigenPod(
+  podOwner: Address,
+  restaker: Restaker
+): EigenPod {
   // Get the pod contract address given the pod owner address
   const eigenpodManager = EigenPodManager.bind(EIGENPOD_MANAGER_ADDRESS);
   const podAddress = eigenpodManager.getPod(podOwner);
@@ -27,7 +30,7 @@ export function createOrLoadEigenPod(podOwner: Address): EigenPod {
     eigenpod = new EigenPod(podAddress.toHex());
     eigenpod.podOwner = podOwner;
     eigenpod.podContractAddress = podAddress;
-    eigenpod.restaker = podOwner.toHex();
+    eigenpod.restaker = restaker.id;
   }
 
   return eigenpod;
