@@ -1,6 +1,9 @@
 name: Deploy Subgraph to Goldsky
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
@@ -10,15 +13,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout the code
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Install pnpm
       - uses: pnpm/action-setup@v4
         name: Install pnpm
         with:
           version: 9
           run_install: false
 
+      # Install Node.js
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
@@ -37,10 +43,23 @@ jobs:
       - name: build
         run: pnpm run build
 
-      # Deploy subgraph using Goldsky action
-      - name: Deploy Subgraph
-        uses: goldsky-io/goldsky-deploy@latest
-        with:
-          api_key: ${{ secrets.GOLDSKY_API_KEY }}
-          subgraph_name: 'mev-commit-validators'
-          path: '.'
+      # Set environment variable for SUBGRAPH_TAG based on event type
+      - name: Set environment variable for SUBGRAPH_TAG
+        if: github.event_name == 'pull_request'
+        run: echo "SUBGRAPH_TAG=pr-${{ github.event.number }}" >> $GITHUB_ENV
+
+      - name: Set SUBGRAPH_TAG to prod on merges to main
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: echo "SUBGRAPH_TAG=prod" >> $GITHUB_ENV
+
+      # Install the Goldsky CLI
+      - name: Install Goldsky CLI
+        id: install-cli
+        run: curl https://goldsky.com | sh -s -- -f
+        shell: bash
+
+      # Deploy subgraph using Goldsky CLI
+      - name: Deploy Subgraph using Goldsky CLI
+        id: deploy-subgraph
+        run: goldsky subgraph deploy --token ${{ secrets.GOLDSKY_API_KEY }} ${{ env.SUBGRAPH_NAME }}/$SUBGRAPH_TAG --path .
+        shell: bash
