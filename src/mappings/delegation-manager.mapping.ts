@@ -2,7 +2,7 @@ import {
   StakerDelegated,
   StakerUndelegated,
 } from '../../generated/DelegationManager/DelegationManager';
-import { Operator } from '../../generated/schema';
+import { Operator, Restaker } from '../../generated/schema';
 import { createOrLoadEigenPod } from '../utils';
 
 export function handleStakerDelegated(event: StakerDelegated): void {
@@ -17,8 +17,15 @@ export function handleStakerDelegated(event: StakerDelegated): void {
   }
   operator.save();
 
+  let restaker = Restaker.load(event.params.staker.toHex());
+  if (restaker == null) {
+    restaker = new Restaker(event.params.staker.toHex());
+    restaker.created = event.block.timestamp;
+    restaker.save();
+  }
+
   // Get the eigen pod address given the staker aka the pod owner
-  const eigenpod = createOrLoadEigenPod(event.params.staker);
+  const eigenpod = createOrLoadEigenPod(event.params.staker, restaker);
 
   // Set the operator for the eigenpod
   eigenpod.operator = operator.id;
@@ -36,8 +43,15 @@ export function handleStakerUndelegated(event: StakerUndelegated): void {
   }
   operator.save();
 
+  let restaker = Restaker.load(event.params.staker.toHex());
+  if (restaker == null) {
+    restaker = new Restaker(event.params.staker.toHex());
+    restaker.created = event.block.timestamp;
+    restaker.save();
+  }
+
   // Get the eigen pod address given the staker aka the pod owner
-  const eigenpod = createOrLoadEigenPod(event.params.staker);
+  const eigenpod = createOrLoadEigenPod(event.params.staker, restaker);
 
   // Set the operator for the eigenpod
   eigenpod.operator = null;

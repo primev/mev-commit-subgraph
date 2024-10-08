@@ -83,6 +83,7 @@ dataSources:
       entities:
         - Operator
         - EigenPod
+        - Restaker
       abis:
         - name: DelegationManager
           file: ./abis/DelegationManager.json

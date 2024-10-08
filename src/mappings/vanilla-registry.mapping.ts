@@ -25,7 +25,7 @@ export function loadOrCreateStakerValidator(
 }
 
 export function handleStaked(event: Staked): void {
-  const stakerAddress = event.params.msgSender.toHex();
+  const stakerAddress = event.params.withdrawalAddress.toHex();
   let staker = Staker.load(stakerAddress);
 
   // Create a new staker if it doesn't exist
