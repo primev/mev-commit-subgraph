@@ -54,7 +54,7 @@ export function handleValidatorRegistered(event: ValidatorRegistered): void {
     restaker.save();
   }
 
-  const eigenpod = createOrLoadEigenPod(event.params.podOwner);
+  const eigenpod = createOrLoadEigenPod(event.params.podOwner, restaker);
   eigenpod.save();
 
   let restakerValidator = loadOrCreateRestakerValidator(event);
